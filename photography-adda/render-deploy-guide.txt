@@ -1,0 +1,53 @@
+Photography Adda — Render deployment quick guide (for beginners)
+Selected deployment target: Render (easy, managed), Storage: AWS S3 (recommended), Currency: INR (Stripe)
+
+1) Create accounts
+   - Sign up at https://render.com and verify your email.
+   - Make sure your GitHub account is connected to Render (in Render dashboard: Account -> Connected Accounts -> GitHub).
+
+2) Prepare AWS S3 (storage) and SQS (queue)
+   - Create two S3 buckets in AWS console: one for uploads (photos-upload-dev) and one for processed (photos-processed-dev).
+   - Create an SQS queue (name: photography-adda-queue). Keep its URL handy.
+
+3) Stripe setup (INR)
+   - Create a Stripe account and enable INR currency payouts (follow Stripe onboarding for India).
+   - Get STRIPE_SECRET and STRIPE_WEBHOOK_SECRET
+
+4) Configure repo secrets (in Render service or GitHub Actions)
+   - For Render, when creating services you will set environment variables. Required envs:
+     - AWS_ACCESS_KEY_ID
+     - AWS_SECRET_ACCESS_KEY
+     - AWS_REGION (ap-south-1)
+     - UPLOAD_BUCKET (photos-upload-dev)
+     - PROCESSED_BUCKET (photos-processed-dev)
+     - SQS_URL (the SQS queue URL)
+     - DATABASE_URL (Render Postgres or external RDS)
+     - STRIPE_SECRET
+     - JWT_SECRET (random strong string)
+     - API_URL (set after API service is live)
+
+5) Deploy on Render (automatic using render.yaml)
+   - In Render dashboard, go to "New" -> "Import from GitHub" and pick your photography-adda repo.
+   - Render will detect render.yaml and create the services listed (you may need to replace the repo URL inside render.yaml with your actual GitHub repo path).
+   - For each service, set the missing env vars (SQS_URL, AWS keys, STRIPE_SECRET, etc.).
+   - Start the services. Render will build Docker images and run them. Watch logs for errors.
+
+6) Domain & TLS (optional)
+   - Render provides automatic TLS. Add a custom domain later if you want (e.g., app.photographyadda.com).
+
+7) Post-deploy checks
+   - Open API /health endpoint to ensure API is up: https://YOUR-API-URL/.health
+   - Upload a small test image using a presign flow (frontend or curl) to verify S3 upload works.
+   - Ensure worker logs show processing from SQS and moving to processed bucket.
+   - Run a sample album job via album-engine /generate endpoint.
+
+8) If anything breaks — send me the error logs or screenshots and I will debug and patch the code.
+
+Notes for beginners:
+- Render is chosen because it handles Docker containers, background workers, and managed Postgres — easy and friendly.
+- For storage we still use AWS S3 because Render does not provide large object storage; S3 is industry standard.
+- I will help you set each env var; just paste values when Render asks during service creation.
+
+--- Files created:
+- render.yaml (placed at repo root)
+- render-deploy-guide.txt (this guide)
