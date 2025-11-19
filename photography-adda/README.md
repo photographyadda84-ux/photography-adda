@@ -36,3 +36,7 @@ and I will continue filling code for:
 - Album layout engine (spread generator + PDF)
 - Desktop pairing endpoints and automatic installer builds
 - Stripe webhook and payment-to-release pipeline
+
+
+## Phase-3: Jarvis Full Fill Started
+Jarvis has started generating Phase-3 components. Review files and set GitHub Secrets before enabling CI deploys.
